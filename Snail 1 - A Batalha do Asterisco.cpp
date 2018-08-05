@@ -1,13 +1,13 @@
-         // Snail
-        //Se quizer entender o código comece pela função "printsnail", depois vá para "direção" e depois "andar",
-       //depois veja as variáveis e seus comentários e o nome de cada função e seus comentários gerais
-      //(os que ficam em cima da função dizendo o que ela faz)
-     //Depois vá para a função principal e tire as suas dúvidas lendo as funções por completo.
-    //Nesse processo um pouco longo vc deve passar gradualmente de um nívem macroscópico para um detalhado e preciso,
+	     // Snail
+	    //Se quizer entender o código comece pela função "printsnail", depois vá para "direção" e depois "andar",
+	   //depois veja as variáveis e seus comentários e o nome de cada função e seus comentários gerais
+	  //(os que ficam em cima da função dizendo o que ela faz)
+	 //Depois vá para a função principal e tire as suas dúvidas lendo as funções por completo.
+	//Nesse processo um pouco longo vc deve passar gradualmente de um nívem macroscópico para um detalhado e preciso,
    //pare quando estiver satisfeito.
   //E antes de começar saiba que esse programa tem uma matriz bidimensional "imagem" de valores int, onde cada valor corresponde a um caracter
  //do jogo e essa variável é a memória do jogo, sendo modificada pela função "andar" e printada pela função "printsnail",
-//Essa é a esrutura básica do jogo e o resto é frufru.
+//Essa é a esrutura básica do jogo.
 
 
 #include<stdio.h>
@@ -27,13 +27,15 @@ static int dx, dy;         //São as diferenciais de posição horizontal e vertica
 static int dt;	    	  //É a diferencial do tempo e serve como delay entre os passos do caracol.
 
 
-//Essa função é um delay e a eu criei e calibrei porque não me dou bem com as bibliotecas pra pegar ela pronta.
+
+//Essa função é um delay e eu criei e calibrei porque não me dou bem com as bibliotecas pra pegar ela pronta.
 int sleep(unsigned long tmilis) {
 	int a = 0;
 	tmilis *= 1888.0442;  //Esse valor é o número de vezes que é necessário realizar esse loop while para passar um milissegundo. 
 	while (tmilis > 0) {
 		tmilis--;
-		for (int i = 0; i < 100; i++){  //'for' só pra gastar um tempinho.
+		for (int i = 0; i < 100; i++){
+			//'for' só pra gastar um tempinho.
 			a++;
 			a--;
 		}
@@ -44,10 +46,12 @@ int sleep(unsigned long tmilis) {
 //Essa função dá a opção de continuar o programa ('j') ou encerrar o jogo ('k').
 int encerrar() {
 	int a = 0;                             //Variável para armazenar dentro dessa função a pecla pressionada.
-	while (!((a == 106) || (a == 107))){  //Enquanto o úsuário não pressionar 'j' (106) ou 'k' (107) continua nesse while redefinindo "a".
+	while (!((a == 106) || (a == 107))){
+		//Enquanto o úsuário não pressionar 'j' (106) ou 'k' (107) continua nesse while redefinindo "a".
 		a = _getch();
 	}
-	if (a == 106){  //Se o usuário apertar 'j' redefine a variável "estado" como 1, o que faz o jogo não terminar.
+	if (a == 106){
+		//Se o usuário apertar 'j' redefine a variável "estado" como 1, o que faz o jogo não terminar.
 		estado = 1;
 	}
 	return 0;
@@ -55,8 +59,10 @@ int encerrar() {
 
 //Preeche o array "imagem" com zeros.
 int clear(){
-	for (int i = 0; i < h; i++){          //Percorre o array na vertical.
-		for (int j = 0; j < l; j++){     //Percorreo array na horizontal.
+	for (int i = 0; i < h; i++){
+		//Percorre o array na vertical.
+		for (int j = 0; j < l; j++){
+			//Percorreo array na horizontal.
 			imagem[i][j] = 0;           //Iguala a zero.
 		}
 	}
@@ -97,11 +103,37 @@ int foodefine() {
 	srand(time(NULL));             //Define a semente para gerar números aleatórios.
 	a = rand() %h;                //Armazena um número aleatório entre 0 e h.
 	b = rand() %l;               //Armazena um número aleatório entre 0 e l.
-	while (imagem[a][b] != 0){  //Enquanto não conseguir que a posição (b,a) no array seja um espaço vazio, repete o processo. 
+	while (imagem[a][b] != 0){
+		//Enquanto não conseguir que a posição (b,a) no array seja um espaço vazio, repete o processo. 
 		a = rand() %h;
 		b = rand() %l;
 	}
 	imagem[a][b] = -1;  //Quando achar uma posição vazia põe -1, definindo como um alimento. 
+	return 0;
+}
+
+//Serve para reverter o sentido de mivimento do caracol, fazendo a ponta da calda virar cabeça e vice-versa.
+int reverter() {
+	int x2, y2;  //Posição anterior ao '@'.
+	//Percorre todo o array:
+	for (int i = 0; i < h; i++){
+		for (int j = 0; j < l; j++){
+			if (imagem[i][j] > 0){  //Se a posição fizer parte do caracol...
+				imagem[i][j] = score + 2 - imagem[i][j];  //Realiza essa operação que faz cada ponto se transformar no seu simétrico.
+				if (imagem[i][j] == score + 1){  //Se o novo valor nessa posição for do '@', grava a posição.
+					y = i;
+					x = j;
+				}
+				if (imagem[i][j] == score){  //Se o novo valor nessa posição for do '+' anterior ao '@', grava a posição.
+					y2 = i;
+					x2 = j;
+				}
+			}
+		}
+	}
+	//Descobre a nova direção do movimento pela diferença entre a posição atual e a que seria anterior.
+	dx = x - x2;
+	dy = y - y2;
 	return 0;
 }
 
@@ -305,6 +337,9 @@ int main() {
 				printf("\n	 ||                                                         ||");
 				printf("\n	 =============================================================");
 				encerrar();
+			}
+			if ((imagem[y + dy][x + dx] == score) && (score > 0)){
+				reverter();
 			}
 			andar();
 			//Limpa a tela e printa o jogo com as novas posição, pontuação e recorde. 
